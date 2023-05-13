@@ -2,8 +2,9 @@ const BITS_PER_BYTE = 8;
 const BYTES_PER_BLOCK = 4;
 const MAX_NUMBER_STORED_IN_BLOCK = Math.pow(2, BITS_PER_BYTE * BYTES_PER_BLOCK);
 const HEX_DIGITS_PER_BYTE = 2;
-const BIN_RADIX = 2;
-const HEX_RADIX = 16;
+export const BIN_RADIX = 2;
+export const HEX_RADIX = 16;
+const BINARY_DIGITS_PER_HEX_DIGIT = Math.log(HEX_RADIX) / Math.log(BIN_RADIX);
 const HEX_DIGITS = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f"];
 
 export enum BitShift {
@@ -216,18 +217,37 @@ export class MyBigInt {
     }
 
     private static performBitwiseShift(value: MyBigInt, size: number, where: BitShift) {
-        const binaryDigits = parseInt(value.getHex(), HEX_RADIX).toString(BIN_RADIX).split("");
+        const binDigits: string[] = [];
+        for (const hexDigit of value.getHex()) {
+            binDigits.push(...convertHexDigitToBinDigits(hexDigit));
+        }
 
         for (let i = 0; i < size; ++i) {
             if (where === BitShift.LEFT) {
-                binaryDigits.push("0");
+                binDigits.push("0");
             } else if (where === BitShift.RIGHT) {
-                binaryDigits.pop();
-                binaryDigits.unshift("0");
+                binDigits.pop();
+                binDigits.unshift("0");
+            }
+        }
+
+        const hexDigits = new Array<string>(Math.ceil(binDigits.length / BINARY_DIGITS_PER_HEX_DIGIT));
+
+        for (let i = binDigits.length - 1; i >= 0; i -= BINARY_DIGITS_PER_HEX_DIGIT) {
+            if (i - BINARY_DIGITS_PER_HEX_DIGIT >= 0) {
+                hexDigits[Math.floor(i / BINARY_DIGITS_PER_HEX_DIGIT)] = 
+                    parseInt(binDigits.slice(i - BINARY_DIGITS_PER_HEX_DIGIT + 1, i + 1)
+                        .join(""), BIN_RADIX,
+                    ).toString(HEX_RADIX);
+            } else {
+                hexDigits[Math.floor(i / BINARY_DIGITS_PER_HEX_DIGIT)] = 
+                    parseInt(binDigits.slice(0, i + 1)
+                        .join(""), BIN_RADIX,
+                    ).toString(HEX_RADIX);
             }
         }
         
-        return new MyBigInt(parseInt(binaryDigits.join(""), BIN_RADIX).toString(HEX_RADIX));
+        return new MyBigInt(hexDigits.join(""));
     }
 }
 
@@ -246,6 +266,17 @@ function addLeadingZeros(blockOfHexDigits: string[]) {
     for (let i = 0; i < count; ++i) {
         blockOfHexDigits.unshift("0");
     }
+}
+
+function convertHexDigitToBinDigits(hexDigit: string) {
+    const binDigits = parseInt(hexDigit, HEX_RADIX).toString(BIN_RADIX).split("");
+    const count = BINARY_DIGITS_PER_HEX_DIGIT - binDigits.length;
+
+    for (let i = 0; i < count; ++i) {
+        binDigits.unshift("0");
+    }
+
+    return binDigits;
 }
 
 function XOR(first: number, second: number) {
