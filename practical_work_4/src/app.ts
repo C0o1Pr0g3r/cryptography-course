@@ -21,13 +21,14 @@ const SEQUENCE_LENGTH = 2500;
 const MAXIMUM_LENGTH_OF_SERIES = 36;
 const MONOBIT_TEST_RANGE = new NumericalRange(9654, 10346);
 const POKER_TEST_RANGE = new NumericalRange(1.03, 57.4);
-const SERIES_LENGTH_TEST = [
-    new NumericalRange(2267, 2733),
-    new NumericalRange(1079, 1421),
-    new NumericalRange(502, 748),
-    new NumericalRange(223, 402),
-    new NumericalRange(90, 223),
-];
+const SERIES_LENGTH_TEST = new Map([
+    ["1", new NumericalRange(2267, 2733)],
+    ["2", new NumericalRange(1079, 1421)],
+    ["3", new NumericalRange(502, 748)],
+    ["4", new NumericalRange(223, 402)],
+    ["5", new NumericalRange(90, 223)],
+    ["6+", new NumericalRange(90, 223)],
+]);
 
 const SUCCESSFUL_MESSAGE = "Test passed";
 const FAILURE_MESSAGE = "Test failed";
@@ -118,8 +119,8 @@ function PokerTest(sequence: Sequence) {
 }
 
 function RunsTest(sequence: Sequence) {
-    const lengthOfSeries: [Map<number, number>, Map<number, number>] =
-        [new Map<number, number>(), new Map<number, number>()];
+    const lengthOfSeries: [Map<string, number>, Map<string, number>] =
+        [new Map<string, number>(), new Map<string, number>()];
     let currentLengthOfSeries = 0;
     let currentSeries = 0;
 
@@ -130,10 +131,13 @@ function RunsTest(sequence: Sequence) {
                 ++currentLengthOfSeries;
             } else {
                 if (currentLengthOfSeries > 0) {
+                    const key = currentLengthOfSeries < SERIES_LENGTH_TEST.size
+                        ? currentLengthOfSeries.toString()
+                        : SERIES_LENGTH_TEST.size.toString() + "+";
                     lengthOfSeries[currentSeries].set(
-                        currentLengthOfSeries,
-                        lengthOfSeries[currentSeries].has(currentLengthOfSeries)
-                            ? lengthOfSeries[currentSeries].get(currentLengthOfSeries)! + 1
+                        key,
+                        lengthOfSeries[currentSeries].has(key)
+                            ? lengthOfSeries[currentSeries].get(key)! + 1
                             : 1,
                     );
                 }
@@ -145,10 +149,7 @@ function RunsTest(sequence: Sequence) {
 
     for (let i = 0; i < lengthOfSeries.length; ++i) {
         for (const key of lengthOfSeries[i].keys()) {
-            const range = key <= SERIES_LENGTH_TEST.length
-                ? SERIES_LENGTH_TEST[key - 1]
-                : SERIES_LENGTH_TEST[SERIES_LENGTH_TEST.length - 1];
-            if (!range.within(lengthOfSeries[i].get(key)!)) {
+            if (!SERIES_LENGTH_TEST.get(key)!.within(lengthOfSeries[i].get(key)!)) {
                 return false;
             }
         }
