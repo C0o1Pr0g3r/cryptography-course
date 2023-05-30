@@ -7,7 +7,7 @@ using namespace std;
 const string SUCCESSFUL_MESSAGE = "Test passed";
 const string FAILURE_MESSAGE = "Test failed";
 
-int main(int, char**) {
+int main() {
     const array<SubstitutionOrPermutationBox, 2> boxes {
         SubstitutionOrPermutationBox(
             SubstitutionBox::encrypt, SubstitutionBox::decrypt
@@ -16,7 +16,7 @@ int main(int, char**) {
             PermutationBox::encrypt, PermutationBox::decrypt
         )
     };
-    
+
     const Number num = 79834852;
     const String str = "SP-network is a series of linked mathematical operations";
     array<variant<Number, String>, 2> data {
@@ -40,4 +40,6 @@ int main(int, char**) {
             cout << endl;
         }
     }
+
+    return 0;
 }
