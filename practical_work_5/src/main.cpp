@@ -96,7 +96,7 @@ void testHashingOfFilesOfDifferentSizes() {
         "test-data/test3.txt"
     }};
 
-    cout << "1. Testing hashing of files of different sizes." << endl;
+    cout << "1. Testing hashing of files of different sizes." << endl << endl;
     for (size_t i = 0; i < NUMBER_OF_TEST_FILES; ++i) {
         const string filename = filenames[i];
         std::ifstream file(filename);
@@ -113,7 +113,7 @@ void testHashingOfFilesOfDifferentSizes() {
 
         file.read(reinterpret_cast<char*>(data), length);
 
-        cout << "Test " << i + 1 << ":" << endl << endl;
+        cout << "Test " << i + 1 << ":" << endl;
         array<string, 2> hexHashes;
         array<size_t, 2> elapsedTime;
         std::tie(hexHashes[0], elapsedTime[0]) = calculateLibraryHashAndMeasureElapsedTime(OwnSHA1::RawMessage(data, length));
@@ -138,8 +138,8 @@ void testHashingInParts() {
 
     cout << "Message: '" << message << "'" << endl;
     cout << "Parts of message:" << endl;
-    for (const auto& part: partsOfMessage) {
-        cout << "'" << part << "'" << endl;
+    for (size_t i = 0; i < partsOfMessage.size(); ++i) {
+        cout << i + 1 << ": '" << partsOfMessage[i] << "'" << endl;
     }
     cout << endl;
 
@@ -152,7 +152,6 @@ void testHashingInParts() {
     cout << "Library\t\t" << hexHashes[0] << "\t" << elapsedTime[0] << " us" << endl;
     cout << "Own\t\t" << hexHashes[1] << "\t" << elapsedTime[1] << " us" << endl;
     cout <<  (hexHashes[0] ==  hexHashes[1] ? SUCCESSFUL_MESSAGE : FAILURE_MESSAGE) << endl;
-    cout << endl;
 }
 
 using namespace std;
