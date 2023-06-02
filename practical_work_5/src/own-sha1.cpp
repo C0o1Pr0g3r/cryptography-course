@@ -11,10 +11,18 @@ const array<Word, NUMBER_OF_RANGES> K {{
     0xca62c1d6
 }};
 const array<LogicalFunction*, NUMBER_OF_RANGES> F {{
-    [](const Word& b, const Word& c, const Word& d) { return b & c | ~b & d; },
-    [](const Word& b, const Word& c, const Word& d) { return b ^ c ^ d; },
-    [](const Word& b, const Word& c, const Word& d) { return b & c | b & d | c & d; },
-    [](const Word& b, const Word& c, const Word& d) { return b ^ c ^ d; }
+    [](const Word& b, const Word& c, const Word& d) {
+        return b & c | ~b & d;
+    },
+    [](const Word& b, const Word& c, const Word& d) {
+        return b ^ c ^ d;
+    },
+    [](const Word& b, const Word& c, const Word& d) {
+        return b & c | b & d | c & d;
+    },
+    [](const Word& b, const Word& c, const Word& d) {
+        return b ^ c ^ d;
+    }
 }};
 
 Word circularBitShiftLeft(const Word& word, size_t size) {
@@ -43,7 +51,11 @@ void OwnSHA1::processBlock() {
         }
     }
 
-    for(size_t t = BLOCK_LENGTH / WORD_LENGTH; t < BLOCK_LENGTH + BLOCK_LENGTH / WORD_LENGTH; ++t) {
+    for(
+        size_t t = BLOCK_LENGTH / WORD_LENGTH;
+        t < BLOCK_LENGTH + BLOCK_LENGTH / WORD_LENGTH;
+        ++t
+    ) {
        w[t] = circularBitShiftLeft(w[t-3] ^ w[t-8] ^ w[t-14] ^ w[t-16], 1);
     }
 
@@ -52,8 +64,11 @@ void OwnSHA1::processBlock() {
     }
 
     for(size_t t = 0; t < BLOCK_LENGTH + BLOCK_LENGTH / WORD_LENGTH; ++t) {
-        const size_t rangeIndex = t / ((BLOCK_LENGTH + BLOCK_LENGTH / WORD_LENGTH) / NUMBER_OF_RANGES);
-        temp = circularBitShiftLeft(a, 5) + F[rangeIndex](b, c, d) + e + w[t] + K[rangeIndex];
+        const size_t rangeIndex = t / (
+            (BLOCK_LENGTH + BLOCK_LENGTH / WORD_LENGTH) / NUMBER_OF_RANGES
+        );
+        temp = circularBitShiftLeft(a, 5) + F[rangeIndex](b, c, d)
+            + e + w[t] + K[rangeIndex];
         e = d;
         d = c;
         c = circularBitShiftLeft(b, 30);
@@ -72,27 +87,41 @@ void OwnSHA1::padMessage() {
     const size_t BLOCK_LENGTH_WITHOUT_FIELD_FOR_MESSAGE_LENGTH =
         BLOCK_LENGTH - sizeof(OwnSHA1::Context::length);
 
-    if (this->context.messageBlockIndex >= BLOCK_LENGTH_WITHOUT_FIELD_FOR_MESSAGE_LENGTH) {
-        this->context.messageBlock[this->context.messageBlockIndex++] = FIRST_PADDING_BYTE;
+    if (this->context.messageBlockIndex
+        >= BLOCK_LENGTH_WITHOUT_FIELD_FOR_MESSAGE_LENGTH
+    ) {
+        this->context.messageBlock[this->context.messageBlockIndex++] =
+            FIRST_PADDING_BYTE;
         while(this->context.messageBlockIndex < BLOCK_LENGTH) {
-            this->context.messageBlock[this->context.messageBlockIndex++] = REMAINING_PADDING_BYTES;
+            this->context.messageBlock[this->context.messageBlockIndex++] =
+                REMAINING_PADDING_BYTES;
         }
 
         this->processBlock();
 
-        while(this->context.messageBlockIndex < BLOCK_LENGTH_WITHOUT_FIELD_FOR_MESSAGE_LENGTH) {
-            this->context.messageBlock[this->context.messageBlockIndex++] = REMAINING_PADDING_BYTES;
+        while(this->context.messageBlockIndex
+            < BLOCK_LENGTH_WITHOUT_FIELD_FOR_MESSAGE_LENGTH
+        ) {
+            this->context.messageBlock[this->context.messageBlockIndex++] =
+                REMAINING_PADDING_BYTES;
         }
     } else {
-        this->context.messageBlock[this->context.messageBlockIndex++] = FIRST_PADDING_BYTE;
-        while(this->context.messageBlockIndex < BLOCK_LENGTH_WITHOUT_FIELD_FOR_MESSAGE_LENGTH) {
-            this->context.messageBlock[this->context.messageBlockIndex++] = REMAINING_PADDING_BYTES;
+        this->context.messageBlock[this->context.messageBlockIndex++] =
+            FIRST_PADDING_BYTE;
+        while(this->context.messageBlockIndex
+            < BLOCK_LENGTH_WITHOUT_FIELD_FOR_MESSAGE_LENGTH
+        ) {
+            this->context.messageBlock[this->context.messageBlockIndex++] =
+                REMAINING_PADDING_BYTES;
         }
     }
 
     for (size_t i = 0; i < sizeof(OwnSHA1::Context::length); ++i) {
-        this->context.messageBlock[i + BLOCK_LENGTH_WITHOUT_FIELD_FOR_MESSAGE_LENGTH] =
-            this->context.length >> BLOCK_LENGTH_WITHOUT_FIELD_FOR_MESSAGE_LENGTH - i * BITS_PER_BYTE;
+        this->context.messageBlock[
+            i + BLOCK_LENGTH_WITHOUT_FIELD_FOR_MESSAGE_LENGTH
+        ] = this->context.length
+            >> BLOCK_LENGTH_WITHOUT_FIELD_FOR_MESSAGE_LENGTH
+            - i * BITS_PER_BYTE;
     }
 
     this->processBlock();
@@ -131,7 +160,8 @@ void OwnSHA1::update(const RawMessage& message) {
     }
 
     for (size_t i = 0; i < message.length && !this->context.corrupted; ++i) {
-        this->context.messageBlock[this->context.messageBlockIndex++] = (message.data[i] & LOW_BYTE_MASK);
+        this->context.messageBlock[this->context.messageBlockIndex++] =
+            (message.data[i] & LOW_BYTE_MASK);
         this->context.length += BITS_PER_BYTE;
         if (!this->context.length) {
             this->context.corrupted = true;
@@ -143,7 +173,9 @@ void OwnSHA1::update(const RawMessage& message) {
 }
 
 void OwnSHA1::update(const string& message) {
-    this->update(RawMessage(reinterpret_cast<const Byte*>(message.c_str()), message.length()));
+    this->update(RawMessage(
+        reinterpret_cast<const Byte*>(message.c_str()), message.length()
+    ));
 }
 
 Hash OwnSHA1::digest() {

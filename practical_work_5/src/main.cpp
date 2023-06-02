@@ -27,7 +27,8 @@ ifstream::pos_type getFileSize(ifstream& file) {
 string convertHashToHexString(const Hash& hash) {
     stringstream ss;
     for (int i = 0; i < 20; ++i) {
-        ss << setfill('0') << setw(HEX_DIGITS_PER_BYTE) << hex << static_cast<Word>(hash[i]);
+        ss << setfill('0') << setw(HEX_DIGITS_PER_BYTE)
+            << hex << static_cast<Word>(hash[i]);
     }
     return ss.str();
 }
@@ -39,12 +40,16 @@ vector<string> splitString(const string& str, char delimiter) {
     size_t i = 0;
     while (i < str.length()) {
         if (str[i] == delimiter) {
-            partsOfString.push_back(str.substr(beginningOfCurrentPart, i - beginningOfCurrentPart));
+            partsOfString.push_back(
+                str.substr(beginningOfCurrentPart, i - beginningOfCurrentPart)
+            );
             beginningOfCurrentPart = i;
             while (str[i] == delimiter) {
                 ++i;
             }
-            partsOfString.push_back(str.substr(beginningOfCurrentPart, i - beginningOfCurrentPart));
+            partsOfString.push_back(
+                str.substr(beginningOfCurrentPart, i - beginningOfCurrentPart)
+            );
             beginningOfCurrentPart = i;
         }
         ++i;
@@ -59,9 +64,16 @@ tuple<string, size_t> calculateLibraryHashAndMeasureElapsedTime(
 ) {
     auto start = high_resolution_clock::now();
     Hash hash;
-    SHA1(reinterpret_cast<const unsigned char*>(message.data), message.length, hash.data());
+    SHA1(
+        reinterpret_cast<const unsigned char*>(message.data),
+        message.length,
+        hash.data()
+    );
     auto end = high_resolution_clock::now();
-    return tuple<string, size_t>(convertHashToHexString(hash), duration_cast<microseconds>(end - start).count());
+    return tuple<string, size_t>(
+        convertHashToHexString(hash),
+        duration_cast<microseconds>(end - start).count()
+    );
 }
 
 tuple<string, size_t> calculateOwnHashAndMeasureElapsedTime(
@@ -72,7 +84,10 @@ tuple<string, size_t> calculateOwnHashAndMeasureElapsedTime(
     sha1.update(message);
     const Hash hash = sha1.digest();
     auto end = high_resolution_clock::now();
-    return tuple<string, size_t>(convertHashToHexString(hash), duration_cast<microseconds>(end - start).count());
+    return tuple<string, size_t>(
+        convertHashToHexString(hash),
+        duration_cast<microseconds>(end - start).count()
+    );
 }
 
 tuple<string, size_t> calculateOwnHashAndMeasureElapsedTime(
@@ -85,7 +100,10 @@ tuple<string, size_t> calculateOwnHashAndMeasureElapsedTime(
     }
     const Hash hash = sha1.digest();
     auto end = high_resolution_clock::now();
-    return tuple<string, size_t>(convertHashToHexString(hash), duration_cast<microseconds>(end - start).count());
+    return tuple<string, size_t>(
+        convertHashToHexString(hash),
+        duration_cast<microseconds>(end - start).count()
+    );
 }
 
 void testHashingOfFilesOfDifferentSizes() {
@@ -116,12 +134,22 @@ void testHashingOfFilesOfDifferentSizes() {
         cout << "Test " << i + 1 << ":" << endl;
         array<string, 2> hexHashes;
         array<size_t, 2> elapsedTime;
-        std::tie(hexHashes[0], elapsedTime[0]) = calculateLibraryHashAndMeasureElapsedTime(OwnSHA1::RawMessage(data, length));
-        std::tie(hexHashes[1], elapsedTime[1]) = calculateOwnHashAndMeasureElapsedTime(OwnSHA1::RawMessage(data, length));
+        std::tie(hexHashes[0], elapsedTime[0]) =
+            calculateLibraryHashAndMeasureElapsedTime(
+                OwnSHA1::RawMessage(data, length)
+            );
+        std::tie(hexHashes[1], elapsedTime[1]) =
+            calculateOwnHashAndMeasureElapsedTime(
+                OwnSHA1::RawMessage(data, length)
+            );
         cout << "\t\tHash" << "\t\t\t\t\t\tCalculation time" << endl;
-        cout << "Library\t\t" << hexHashes[0] << "\t" << elapsedTime[0] << " us" << endl;
-        cout << "Own\t\t" << hexHashes[1] << "\t" << elapsedTime[1] << " us" << endl;
-        cout <<  (hexHashes[0] ==  hexHashes[1] ? SUCCESSFUL_MESSAGE : FAILURE_MESSAGE) << endl;
+        cout << "Library\t\t" << hexHashes[0] << "\t"
+            << elapsedTime[0] << " us" << endl;
+        cout << "Own\t\t" << hexHashes[1] << "\t"
+            << elapsedTime[1] << " us" << endl;
+        cout << (hexHashes[0] ==  hexHashes[1]
+            ? SUCCESSFUL_MESSAGE : FAILURE_MESSAGE
+        ) << endl;
         cout << endl;
 
         delete data;
@@ -131,7 +159,10 @@ void testHashingOfFilesOfDifferentSizes() {
 }
 
 void testHashingInParts() {
-    const string message = "A hash function is any function that can be used to map data of arbitrary size to fixed-size values, though there are some hash functions that support variable length output.";
+    const string message =
+        "A hash function is any function that can be used to map data"
+        " of arbitrary size to fixed-size values, though there are"
+        " some hash functions that support variable length output.";
     const vector<string> partsOfMessage = splitString(message, ' ');
 
     cout << "2. Testing hash in parts." << endl << endl;
@@ -146,12 +177,22 @@ void testHashingInParts() {
 
     array<string, 2> hexHashes;
     array<size_t, 2> elapsedTime;
-    std::tie(hexHashes[0], elapsedTime[0]) = calculateLibraryHashAndMeasureElapsedTime(OwnSHA1::RawMessage(reinterpret_cast<const Byte*>(message.c_str()), message.length()));
-    std::tie(hexHashes[1], elapsedTime[1]) = calculateOwnHashAndMeasureElapsedTime(partsOfMessage);
+    std::tie(hexHashes[0], elapsedTime[0]) =
+        calculateLibraryHashAndMeasureElapsedTime(
+            OwnSHA1::RawMessage(
+                reinterpret_cast<const Byte*>(message.c_str()),
+                message.length()
+        ));
+    std::tie(hexHashes[1], elapsedTime[1]) =
+        calculateOwnHashAndMeasureElapsedTime(partsOfMessage);
     cout << "\t\tHash" << "\t\t\t\t\t\tCalculation time" << endl;
-    cout << "Library\t\t" << hexHashes[0] << "\t" << elapsedTime[0] << " us" << endl;
-    cout << "Own\t\t" << hexHashes[1] << "\t" << elapsedTime[1] << " us" << endl;
-    cout <<  (hexHashes[0] ==  hexHashes[1] ? SUCCESSFUL_MESSAGE : FAILURE_MESSAGE) << endl;
+    cout << "Library\t\t" << hexHashes[0] << "\t"
+        << elapsedTime[0] << " us" << endl;
+    cout << "Own\t\t" << hexHashes[1] << "\t"
+        << elapsedTime[1] << " us" << endl;
+    cout <<  (hexHashes[0] ==  hexHashes[1]
+        ? SUCCESSFUL_MESSAGE : FAILURE_MESSAGE
+    ) << endl;
 }
 
 using namespace std;
