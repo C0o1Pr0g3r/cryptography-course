@@ -61,7 +61,7 @@ tuple<string, size_t> calculateLibraryHashAndMeasureElapsedTime(
     Hash hash;
     SHA1(reinterpret_cast<const unsigned char*>(message.data), message.length, hash.data());
     auto end = high_resolution_clock::now();
-    return tuple<string, size_t>(convertHashToHexString(hash), (end - start).count());
+    return tuple<string, size_t>(convertHashToHexString(hash), duration_cast<microseconds>(end - start).count());
 }
 
 tuple<string, size_t> calculateOwnHashAndMeasureElapsedTime(
@@ -72,7 +72,7 @@ tuple<string, size_t> calculateOwnHashAndMeasureElapsedTime(
     sha1.update(message);
     const Hash hash = sha1.digest();
     auto end = high_resolution_clock::now();
-    return tuple<string, size_t>(convertHashToHexString(hash), (end - start).count());
+    return tuple<string, size_t>(convertHashToHexString(hash), duration_cast<microseconds>(end - start).count());
 }
 
 tuple<string, size_t> calculateOwnHashAndMeasureElapsedTime(
@@ -85,7 +85,7 @@ tuple<string, size_t> calculateOwnHashAndMeasureElapsedTime(
     }
     const Hash hash = sha1.digest();
     auto end = high_resolution_clock::now();
-    return tuple<string, size_t>(convertHashToHexString(hash), (end - start).count());
+    return tuple<string, size_t>(convertHashToHexString(hash), duration_cast<microseconds>(end - start).count());
 }
 
 void testHashingOfFilesOfDifferentSizes() {
@@ -119,8 +119,8 @@ void testHashingOfFilesOfDifferentSizes() {
         std::tie(hexHashes[0], elapsedTime[0]) = calculateLibraryHashAndMeasureElapsedTime(OwnSHA1::RawMessage(data, length));
         std::tie(hexHashes[1], elapsedTime[1]) = calculateOwnHashAndMeasureElapsedTime(OwnSHA1::RawMessage(data, length));
         cout << "\t\tHash" << "\t\t\t\t\t\tCalculation time" << endl;
-        cout << "Library\t\t" << hexHashes[0] << "\t" << elapsedTime[0] << endl;
-        cout << "Own\t\t" << hexHashes[1] << "\t" << elapsedTime[1] << endl;
+        cout << "Library\t\t" << hexHashes[0] << "\t" << elapsedTime[0] << " us" << endl;
+        cout << "Own\t\t" << hexHashes[1] << "\t" << elapsedTime[1] << " us" << endl;
         cout <<  (hexHashes[0] ==  hexHashes[1] ? SUCCESSFUL_MESSAGE : FAILURE_MESSAGE) << endl;
         cout << endl;
 
@@ -149,8 +149,8 @@ void testHashingInParts() {
     std::tie(hexHashes[0], elapsedTime[0]) = calculateLibraryHashAndMeasureElapsedTime(OwnSHA1::RawMessage(reinterpret_cast<const Byte*>(message.c_str()), message.length()));
     std::tie(hexHashes[1], elapsedTime[1]) = calculateOwnHashAndMeasureElapsedTime(partsOfMessage);
     cout << "\t\tHash" << "\t\t\t\t\t\tCalculation time" << endl;
-    cout << "Library\t\t" << hexHashes[0] << "\t" << elapsedTime[0] << endl;
-    cout << "Own\t\t" << hexHashes[1] << "\t" << elapsedTime[1] << endl;
+    cout << "Library\t\t" << hexHashes[0] << "\t" << elapsedTime[0] << " us" << endl;
+    cout << "Own\t\t" << hexHashes[1] << "\t" << elapsedTime[1] << " us" << endl;
     cout <<  (hexHashes[0] ==  hexHashes[1] ? SUCCESSFUL_MESSAGE : FAILURE_MESSAGE) << endl;
     cout << endl;
 }
