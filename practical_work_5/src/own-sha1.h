@@ -52,7 +52,7 @@ public:
     void reset();
     void update(const RawMessage& message);
     void update(const string& message);
-    Hash result();
+    Hash digest();
 };
 
 #endif // SHA1_INCLUDED

@@ -146,7 +146,7 @@ void OwnSHA1::update(const string& message) {
     this->update(RawMessage(reinterpret_cast<const Byte*>(message.c_str()), message.length()));
 }
 
-Hash OwnSHA1::result() {
+Hash OwnSHA1::digest() {
     Hash hash;
 
     if (this->context.corrupted) {

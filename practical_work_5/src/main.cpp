@@ -70,7 +70,7 @@ tuple<string, size_t> calculateOwnHashAndMeasureElapsedTime(
     auto start = high_resolution_clock::now();
     OwnSHA1 sha1;
     sha1.update(message);
-    const Hash hash = sha1.result();
+    const Hash hash = sha1.digest();
     auto end = high_resolution_clock::now();
     return tuple<string, size_t>(convertHashToHexString(hash), (end - start).count());
 }
@@ -83,7 +83,7 @@ tuple<string, size_t> calculateOwnHashAndMeasureElapsedTime(
     for (size_t i = 0; i < partsOfMessage.size(); ++i) {
         sha1.update(partsOfMessage[i]);
     }
-    const Hash hash = sha1.result();
+    const Hash hash = sha1.digest();
     auto end = high_resolution_clock::now();
     return tuple<string, size_t>(convertHashToHexString(hash), (end - start).count());
 }
