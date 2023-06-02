@@ -91,9 +91,9 @@ tuple<string, size_t> calculateOwnHashAndMeasureElapsedTime(
 void testHashingOfFilesOfDifferentSizes() {
     const size_t NUMBER_OF_TEST_FILES = 3;
     const array<string, 3> filenames {{
-        "tests/test1.txt",
-        "tests/test2.txt",
-        "tests/test3.txt"
+        "test-data/test1.txt",
+        "test-data/test2.txt",
+        "test-data/test3.txt"
     }};
 
     cout << "1. Testing hashing of files of different sizes." << endl;
