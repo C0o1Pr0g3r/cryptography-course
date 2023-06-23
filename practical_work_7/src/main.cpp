@@ -9,59 +9,48 @@ const string FAILURE_MESSAGE = "Test failed";
 
 int main() {
     const KeyPair keyPair = Elgamal::generateKeyPair();
-
-    const Data message {{5, 29, 98, 237, 124}};
-
-    SignedData<Data> signedMessage = Elgamal::sign(message, keyPair);
-
-    cout << "Message: ";
-    for (const auto& elem: message) {
-        cout << static_cast<int>(elem) << " ";
-    }
+    cout << "Key pair: " << keyPair << endl;
     cout << endl;
 
-    cout << "Signature verification with holistic data: "
+    const string message = "Asymmetric cryptography";
+
+    const SignedMessage signedMessage = Elgamal::sign(message, keyPair);
+    SignedMessage signedMessageWithCorruptedMessage = signedMessage;
+    signedMessageWithCorruptedMessage.getMessage()[1] = 'h';
+    SignedMessage signedMessageWithCorruptedSignature = signedMessage;
+    signedMessageWithCorruptedSignature.getSignature().getR() = 96;
+
+    cout << "1. Digital signature." << endl;
+    cout << "Signed message: " << signedMessage.getMessage() << endl;
+    cout << "Signature: " << signedMessage.getSignature() << endl;
+
+    cout
+        << "Signature verification for correct message and correct signature: "
         << (Elgamal::verify(signedMessage, keyPair.getPublicKey())
-            ? SUCCESSFUL_MESSAGE
-            : FAILURE_MESSAGE)
+            ? SUCCESSFUL_MESSAGE : FAILURE_MESSAGE)
         << endl;
-
-    signedMessage.getMessage()[0] = 97;
-
-    cout << "Corrupted message: ";
-    for (const auto& elem: signedMessage.getMessage()) {
-        cout << static_cast<int>(elem) << " ";
-    }
+    cout
+        << "Signature verification for corrupted message and correct signature: "
+        << (Elgamal::verify(signedMessageWithCorruptedMessage, keyPair.getPublicKey())
+            ? SUCCESSFUL_MESSAGE : FAILURE_MESSAGE)
+        << endl;
+    cout
+        << "Signature verification for correct message and corrupted signature: "
+        << (Elgamal::verify(signedMessageWithCorruptedSignature, keyPair.getPublicKey())
+            ? SUCCESSFUL_MESSAGE : FAILURE_MESSAGE)
+        << endl;
     cout << endl;
 
-    cout << "Signature verification with corrupted data: "
-        << (Elgamal::verify(signedMessage, keyPair.getPublicKey())
-            ? SUCCESSFUL_MESSAGE
-            : FAILURE_MESSAGE)
-        << endl;
+    const CipherText cipherText = Elgamal::encrypt(message, keyPair.getPublicKey());
+    const Data decryptedData = Elgamal::decrypt(cipherText, keyPair);
+    const string decryptedMessage(decryptedData.begin(), decryptedData.end());
 
-    const Data encryptedMessage = Elgamal::encrypt(message, keyPair.getPublicKey());
-    const Data decryptedMessage = Elgamal::decrypt(encryptedMessage, keyPair);
+    cout << "2. Encryption and decryption." << endl;
+    cout << "Message: " << message << endl;
+    cout << "Cipher text: " << cipherText << endl;
+    cout << "Decrypted message: " << decryptedMessage << endl;
 
-
-
-    cout << "Encrypted message: ";
-    for (const auto& elem: encryptedMessage) {
-        cout << static_cast<int>(elem) << " ";
-    }
-    cout << endl;
-
-    cout << "Decrypted message: ";
-    for (const auto& elem: decryptedMessage) {
-        cout << static_cast<int>(elem) << " ";
-    }
-    cout << endl;
-
-    cout << "Checking encryption and decryption: "
-        << (message == decryptedMessage
-            ? SUCCESSFUL_MESSAGE
-            : FAILURE_MESSAGE)
-        << endl;
+    cout << (message == decryptedMessage ? SUCCESSFUL_MESSAGE : FAILURE_MESSAGE) << endl;
 
     return 0;
 }
