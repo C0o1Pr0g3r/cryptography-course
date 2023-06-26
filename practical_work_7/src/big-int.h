@@ -201,13 +201,13 @@ public:
             }
         } else {
             throw invalid_argument(
-                "The 'radix' parameter contains an invalid value"
-            );
+                "The 'radix' parameter cannot be equal to "
+                + to_string(static_cast<int>(radix)));
         }
 
         if (result == "") {
             throw runtime_error(
-                "Failed to convert biginteger"
+                "Failed to convert big integer"
                     " to string representation in base "
                 + to_string(static_cast<int>(radix))
             );
