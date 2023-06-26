@@ -6,12 +6,11 @@
 #include <sstream>
 #include <iomanip>
 #include <openssl/sha.h>
+#include "definitions.h"
 #include "big-int.h"
 
-using Byte = uint8_t;
 using Data = vector<Byte>;
 using CipherText = vector<BigInt>;
-const size_t BITS_PER_BYTE = 8;
 const size_t HEX_DIGITS_PER_BYTE = 2;
 const size_t HASH_LENGTH = 160 / BITS_PER_BYTE;
 using Hash = array<Byte, HASH_LENGTH>;
