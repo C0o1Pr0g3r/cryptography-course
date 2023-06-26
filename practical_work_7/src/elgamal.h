@@ -61,7 +61,9 @@ public:
 };
 
 ostream& operator<<(ostream& out, const PublicKey& publicKey) {
-    out << "(" << publicKey.p << ", " << publicKey.g << ", " << publicKey.y << ")";
+    out << "("
+        << publicKey.p << ", " << publicKey.g << ", " << publicKey.y
+        << ")";
     return out;
 }
 
@@ -169,7 +171,9 @@ private:
     static string convertHashToHex(const Hash& hash) {
         std::stringstream ss;
         for (int i = 0; i < hash.size(); ++i) {
-            ss << setfill('0') << setw(HEX_DIGITS_PER_BYTE) << hex << static_cast<int>(hash[i]);
+            ss
+                << setfill('0') << setw(HEX_DIGITS_PER_BYTE)
+                << hex << static_cast<int>(hash[i]);
         }
         return ss.str();
     }
@@ -180,12 +184,16 @@ private:
 
 public:
     static KeyPair generateKeyPair() {
-        const PrivateKey privateKey(BigInt::generateRandomInInterval(1, P - 1));
+        const PrivateKey privateKey(
+            BigInt::generateRandomInInterval(1, P - 1)
+        );
         const PublicKey publicKey(P, G, privateKey);
         return KeyPair(privateKey, publicKey);
     }
 
-    static SignedMessage<Data> sign(const Data& message, const KeyPair& keyPair) {
+    static SignedMessage<Data> sign(
+        const Data& message, const KeyPair& keyPair
+    ) {
         const BigInt p = keyPair.getPublicKey().getP();
         const BigInt g = keyPair.getPublicKey().getG();
         const BigInt t = keyPair.getPublicKey().getY();
@@ -199,19 +207,25 @@ public:
         }
 
         const BigInt r = BigInt::powMod(g, k, p);
-        const BigInt inverseModuloForK = BigInt::computeInverseModulo(k, p - 1);
+        const BigInt inverseModuloForK = BigInt::computeInverseModulo(
+            k, p - 1
+        );
         const BigInt s = BigInt::mulMod((m - x * r), inverseModuloForK, p - 1);
 
         return SignedMessage(message, Signature(r, s));
     }
 
-    static SignedMessage<string> sign(const string& message, const KeyPair& keyPair) {
+    static SignedMessage<string> sign(
+        const string& message, const KeyPair& keyPair
+    ) {
         const Data data(message.begin(), message.end());
         const SignedMessage signedMessage = sign(data, keyPair);
         return SignedMessage(message, signedMessage.getSignature());
     }
 
-    static bool verify(const SignedMessage<Data>& signedMessage, const PublicKey& publicKey) {
+    static bool verify(
+        const SignedMessage<Data>& signedMessage, const PublicKey& publicKey
+    ) {
         const BigInt p = publicKey.getP();
         const BigInt g = publicKey.getG();
         const BigInt y = publicKey.getY();
@@ -223,23 +237,32 @@ public:
         return
             r > 0 && r < p && s > 0 && s < p - 1
             &&
-            BigInt::mulMod(BigInt::powMod(y, r, p), BigInt::powMod(r, s, p), p) == BigInt::powMod(g, m, p);
+            BigInt::mulMod(BigInt::powMod(y, r, p), BigInt::powMod(r, s, p), p)
+                == BigInt::powMod(g, m, p);
     }
 
-    static bool verify(const SignedMessage<string>& signedMessage, const PublicKey& publicKey) {
+    static bool verify(
+        const SignedMessage<string>& signedMessage, const PublicKey& publicKey
+    ) {
         Data data(signedMessage.getMessage().length());
         for (int i = 0; i < signedMessage.getMessage().length(); ++i) {
             data[i] = signedMessage.getMessage()[i];
         }
-        return verify(SignedMessage(data, signedMessage.getSignature()), publicKey);
+        return verify(SignedMessage(
+            data, signedMessage.getSignature()), publicKey
+        );
     }
 
-    static CipherText encrypt(const Data& message, const PublicKey& publicKey) {
+    static CipherText encrypt(
+        const Data& message, const PublicKey& publicKey
+    ) {
         const BigInt p = publicKey.getP();
         const BigInt g = publicKey.getG();
         const BigInt y = publicKey.getY();
 
-        CipherText cipherText(message.size() * CIPHER_UNIT_PER_PLAINTEXT_BLOCK);
+        CipherText cipherText(
+            message.size() * CIPHER_UNIT_PER_PLAINTEXT_BLOCK
+        );
 
         for (int i = 0; i < message.size(); ++i) {
             BigInt k(0);
@@ -258,7 +281,9 @@ public:
         return cipherText;
     }
 
-    static CipherText encrypt(const string& message, const PublicKey& publicKey) {
+    static CipherText encrypt(
+        const string& message, const PublicKey& publicKey
+    ) {
         return encrypt(Data(message.begin(), message.end()), publicKey);
     }
 
@@ -268,12 +293,18 @@ public:
         const BigInt y = keyPair.getPublicKey().getY();
         const BigInt x = keyPair.getPrivateKey();
 
-        Data decryptedMessage(cipherText.size() / CIPHER_UNIT_PER_PLAINTEXT_BLOCK);
+        Data decryptedMessage(
+            cipherText.size() / CIPHER_UNIT_PER_PLAINTEXT_BLOCK
+        );
 
         for (int i = 0; i < decryptedMessage.size(); ++i) {
             const BigInt a = cipherText[i * CIPHER_UNIT_PER_PLAINTEXT_BLOCK];
-            const BigInt b = cipherText[i * CIPHER_UNIT_PER_PLAINTEXT_BLOCK + 1];
-            const BigInt m = BigInt::mulMod(b, BigInt::powMod(a, p - 1 - x, p), p);
+            const BigInt b = cipherText[
+                i * CIPHER_UNIT_PER_PLAINTEXT_BLOCK + 1
+            ];
+            const BigInt m = BigInt::mulMod(
+                b, BigInt::powMod(a, p - 1 - x, p), p
+            );
             decryptedMessage[i] = BigInt::mask(m, BITS_PER_BYTE);
         }
 

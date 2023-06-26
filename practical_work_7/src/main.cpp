@@ -30,18 +30,26 @@ int main() {
             ? SUCCESSFUL_MESSAGE : FAILURE_MESSAGE)
         << endl;
     cout
-        << "Signature verification for corrupted message and correct signature: "
-        << (Elgamal::verify(signedMessageWithCorruptedMessage, keyPair.getPublicKey())
+        << "Signature verification"
+            " for corrupted message and correct signature: "
+        << (Elgamal::verify(
+            signedMessageWithCorruptedMessage, keyPair.getPublicKey()
+        )
             ? SUCCESSFUL_MESSAGE : FAILURE_MESSAGE)
         << endl;
     cout
-        << "Signature verification for correct message and corrupted signature: "
-        << (Elgamal::verify(signedMessageWithCorruptedSignature, keyPair.getPublicKey())
+        << "Signature verification"
+            " for correct message and corrupted signature: "
+        << (Elgamal::verify(
+            signedMessageWithCorruptedSignature, keyPair.getPublicKey()
+        )
             ? SUCCESSFUL_MESSAGE : FAILURE_MESSAGE)
         << endl;
     cout << endl;
 
-    const CipherText cipherText = Elgamal::encrypt(message, keyPair.getPublicKey());
+    const CipherText cipherText = Elgamal::encrypt(
+        message, keyPair.getPublicKey()
+    );
     const Data decryptedData = Elgamal::decrypt(cipherText, keyPair);
     const string decryptedMessage(decryptedData.begin(), decryptedData.end());
 
@@ -50,7 +58,9 @@ int main() {
     cout << "Cipher text: " << cipherText << endl;
     cout << "Decrypted message: " << decryptedMessage << endl;
 
-    cout << (message == decryptedMessage ? SUCCESSFUL_MESSAGE : FAILURE_MESSAGE) << endl;
+    cout
+        << (message == decryptedMessage ? SUCCESSFUL_MESSAGE : FAILURE_MESSAGE)
+        << endl;
 
     return 0;
 }
