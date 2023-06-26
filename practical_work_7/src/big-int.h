@@ -18,26 +18,6 @@ enum class Radix {
 
 const string OPERATION_FAILED = "Operation failed";
 
-class BigIntContext {
-private:
-    friend class BigInt;
-
-private:
-    BN_CTX* data;
-
-public:
-    BigIntContext() {
-        this->data = BN_CTX_new();
-        if (!this->data) {
-            throw bad_alloc();
-        }
-    }
-
-    ~BigIntContext() {
-        BN_CTX_free(this->data);
-    }
-};
-
 class BigInt {
 private:
     friend ostream& operator<<(ostream& out, const BigInt& bigInt);
@@ -46,6 +26,26 @@ private:
     using BinaryOperationWithContext = function<int (BIGNUM*, const BIGNUM*, const BIGNUM*, BN_CTX*)>;
     using BinaryOperationWithWord = function<int (BIGNUM*, Word)>;
     using TernaryOperationWithContext = function<int (BIGNUM*, const BIGNUM*, const BIGNUM*, const BIGNUM*, BN_CTX *ctx)>;
+
+    class Context {
+    private:
+        friend class BigInt;
+
+    private:
+        BN_CTX* data;
+
+    public:
+        Context() {
+            this->data = BN_CTX_new();
+            if (!this->data) {
+                throw bad_alloc();
+            }
+        }
+
+        ~Context() {
+            BN_CTX_free(this->data);
+        }
+    };
 
 private:
     BIGNUM* data;
@@ -60,7 +60,7 @@ private:
     }
 
     static BigInt perform(const BinaryOperationWithContext& op, const BigInt& a, const BigInt& b) {
-        BigIntContext ctx;
+        Context ctx;
         BigInt result;
         if (!op(result.data, a.data, b.data, ctx.data)) {
             throw runtime_error(OPERATION_FAILED);
@@ -77,7 +77,7 @@ private:
     }
 
     static BigInt perform(const TernaryOperationWithContext& op, const BigInt& a, const BigInt& b, const BigInt& c) {
-        BigIntContext ctx;
+        Context ctx;
         BigInt result;
         if (!op(result.data, a.data, b.data, c.data, ctx.data)) {
             throw runtime_error(OPERATION_FAILED);
@@ -173,7 +173,7 @@ public:
     }
 
     BigInt operator/(const BigInt& other) const {
-        BigIntContext ctx;
+        Context ctx;
         BigInt result;
         if (!BN_div(result.data, nullptr, this->data, other.data, ctx.data)) {
             throw runtime_error(OPERATION_FAILED);
@@ -182,7 +182,7 @@ public:
     }
 
     BigInt operator%(const BigInt& other) const {
-        BigIntContext ctx;
+        Context ctx;
         BigInt result;
         if (!BN_mod(result.data, this->data, other.data, ctx.data)) {
             throw runtime_error(OPERATION_FAILED);
@@ -259,7 +259,7 @@ public:
     }
 
     static BigInt computeInverseModulo(const BigInt& a, const BigInt& n) {
-        BigIntContext ctx;
+        Context ctx;
         BigInt result;
         if (!BN_mod_inverse(result.data, a.data, n.data, ctx.data)) {
             throw runtime_error(OPERATION_FAILED);
