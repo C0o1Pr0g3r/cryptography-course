@@ -161,7 +161,7 @@ namespace EllipticCryptography {
                     {{participants[currentParticipantIndex].getName()}}
                 ),
                 participants[currentParticipantIndex]
-                    .getKeyPair().getPrivateKey() * BASE_POINT));
+                    .getKeyPair().getPublicKey()));
             }
             cout << step + 1 << ") "
                 << participants[currentParticipantIndex].getName()
