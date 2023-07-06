@@ -6,6 +6,7 @@
 #include <stdexcept>
 #include <bitset>
 #include <openssl/bn.h>
+#include <openssl/ec.h>
 #include "definitions.h"
 
 using namespace std;
@@ -18,19 +19,19 @@ enum class Radix {
     HEX = 16,
 };
 
-class Curve;
-class BuiltinCurve;
-class Point;
+namespace EllipticCryptography {
+    class Curve;
+    class BuiltinCurve;
+    class Point;
+}
 
 class BigInt {
 private:
+    friend class EllipticCryptography::Curve;
+    friend class EllipticCryptography::BuiltinCurve;
+    friend class EllipticCryptography::Point;
     friend ostream& operator<<(ostream& out, const BigInt& bigInt);
-    friend Point sum(const Curve& curve, const Point& a, const Point& b);
-    friend Point redouble(const Curve& curve, const Point& a);
-    friend Point multiply(const Curve& curve, const BigInt& n, const Point& a);
-    friend class Curve;
-    friend class BuiltinCurve;
-    friend class Point;
+    friend bool areEqual(const EC_GROUP* a, const EC_GROUP* b);
 
     using BinaryOperation = function<
         int (BIGNUM*, const BIGNUM*, const BIGNUM*
@@ -46,9 +47,10 @@ private:
     class Context {
     private:
         friend class BigInt;
-        friend class Curve;
-        friend class BuiltinCurve;
-        friend class Point;
+        friend class EllipticCryptography::Curve;
+        friend class EllipticCryptography::BuiltinCurve;
+        friend class EllipticCryptography::Point;
+        friend bool areEqual(const EC_GROUP* a, const EC_GROUP* b);
 
     private:
         BN_CTX* data = nullptr;
@@ -377,12 +379,7 @@ public:
     static BigInt generateInInterval(
         const BigInt& min, const BigInt& max
     ) {
-        const BigInt range = max - min - 1;
-        BigInt result;
-        if (!BN_pseudo_rand_range(result.data, range.data)) {
-            throw runtime_error(OPERATION_FAILED);
-        }
-        return result + min + 1;
+        return generateInRange(min + 1, max - 1);
     }
 
     static BigInt mask(const BigInt& a, size_t n) {
