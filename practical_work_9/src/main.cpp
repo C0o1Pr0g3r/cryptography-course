@@ -53,7 +53,7 @@ bool areSharedSecretsEqual(const vector<Participant>& participants) {
 
 void test(vector<Participant>& participants) {
     cout << "Elliptic curve Diffie-Hellman test for "
-        << participants.size() << " participants" << endl;
+        << participants.size() << " participants" << endl << endl;
     for (const auto& participant : participants) {
         cout << participant.getName() << " key pair: "
             << participant.getKeyPair() << endl;
