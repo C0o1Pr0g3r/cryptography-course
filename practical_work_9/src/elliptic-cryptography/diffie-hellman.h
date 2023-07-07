@@ -114,32 +114,35 @@ namespace EllipticCryptography {
         friend class Point;
 
     private:
-        static bool generateSharedSecretIfThereIsEnoughData(
+        static bool isThereEnoughDataToGenerateSharedSecretForCurrentParticipant(
+            const int numberOfParticipants,
+            const vector<Expression>& expressionsOfCurrentParticipant
+        ) {
+            return
+                expressionsOfCurrentParticipant.size() > 0
+                &&
+                expressionsOfCurrentParticipant[0].variables.size()
+                    == numberOfParticipants - 1;
+        }
+
+        static void generateSharedSecretForCurrentParticipant(
             vector<Expression>& expressions,
             vector<Participant>& participants,
             const int currentParticipantIndex
         ) {
             Participant& currentParticipant =
                 participants[currentParticipantIndex];
-            if (
-                expressions.size() > 0
-                &&
-                expressions[0].variables.size() == participants.size() - 1
-            ) {
-                currentParticipant.sharedSecret = (
-                    currentParticipant.getKeyPair().getPrivateKey()
-                    *
-                    expressions[0].result
-                ).getCoordinates().x;
-                expressions.erase(
-                    expressions.begin(), expressions.begin() + 1
-                );
-                cout << currentParticipant.getName()
-                    << " generated a shared secret: "
-                    << currentParticipant.getSharedSecret() << endl << endl;
-                return true;
-            }
-            return false;
+            currentParticipant.sharedSecret = (
+                currentParticipant.getKeyPair().getPrivateKey()
+                *
+                expressions[0].result
+            ).getCoordinates().x;
+            expressions.erase(
+                expressions.begin(), expressions.begin() + 1
+            );
+            cout << currentParticipant.getName()
+                << " generated a shared secret: "
+                << currentParticipant.getSharedSecret() << endl << endl;
         }
 
         static vector<Expression> calculateDataForNextParticipant(
@@ -176,7 +179,7 @@ namespace EllipticCryptography {
         }
 
     public:
-        static void generateSharedSecret(vector<Participant>& participants) {
+        static void generateSharedSecretFor(vector<Participant>& participants) {
             vector<vector<Expression>> expressionsOfParticipants(
                 participants.size()
             );
@@ -192,25 +195,26 @@ namespace EllipticCryptography {
                 vector<Expression> expressions =
                     expressionsOfParticipants[currentParticipantIndex];
 
-                if (generateSharedSecretIfThereIsEnoughData(
-                    expressions, participants, currentParticipantIndex
+                if (isThereEnoughDataToGenerateSharedSecretForCurrentParticipant(
+                    participants.size(), expressions
                 )) {
+                    generateSharedSecretForCurrentParticipant(
+                        expressions, participants, currentParticipantIndex
+                    );
                     ++numberOfGeneratedSharedSecrets;
+                    if (numberOfGeneratedSharedSecrets == participants.size()) {
+                        break;
+                    }
                 }
 
-                if (numberOfGeneratedSharedSecrets == participants.size()) {
-                    break;
-                }
-
-                expressionsOfParticipants[
-                    nextParticipantIndex
-                ] = calculateDataForNextParticipant(
-                    expressions,
-                    participants,
-                    currentParticipantIndex,
-                    nextParticipantIndex,
-                    step
-                );
+                expressionsOfParticipants[nextParticipantIndex] =
+                    calculateDataForNextParticipant(
+                        expressions,
+                        participants,
+                        currentParticipantIndex,
+                        nextParticipantIndex,
+                        step
+                    );
 
                 ++step;
                 ++currentParticipantIndex;

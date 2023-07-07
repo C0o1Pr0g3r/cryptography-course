@@ -59,7 +59,7 @@ void test(vector<Participant>& participants) {
             << participant.getKeyPair() << endl;
     }
     cout << endl;
-    DiffieHellman::generateSharedSecret(participants);
+    DiffieHellman::generateSharedSecretFor(participants);
     cout << (areSharedSecretsEqual(participants)
         ? SUCCESSFUL_MESSAGE : FAILURE_MESSAGE) << endl;
 }
