@@ -85,10 +85,7 @@ namespace EllipticCryptography {
     }
 
 
-    class Expression {
-    private:
-        friend ostream& operator<<(ostream& out, const Expression& expression);
-
+    struct Expression {
     public:
         vector<string> variables;
         Point result;
@@ -110,117 +107,96 @@ namespace EllipticCryptography {
 
     class DiffieHellman {
     private:
-        friend class Curve;
-        friend class Point;
-
-    private:
-        static bool isThereEnoughDataToGenerateSharedSecretForCurrentParticipant(
-            const int numberOfParticipants,
-            const vector<Expression>& expressionsOfCurrentParticipant
+        static bool enoughVariablesToGenerateSharedSecret(
+            const int numberOfVariables,
+            const int numberOfParticipants
         ) {
-            return
-                expressionsOfCurrentParticipant.size() > 0
-                &&
-                expressionsOfCurrentParticipant[0].variables.size()
-                    == numberOfParticipants - 1;
+            return numberOfVariables == numberOfParticipants - 1;
         }
 
-        static void generateSharedSecretForCurrentParticipant(
+        static void computeSharedSecretForCurrentParticipant(
             vector<Expression>& expressions,
-            vector<Participant>& participants,
-            const int currentParticipantIndex
+            Participant& currentParticipant
         ) {
-            Participant& currentParticipant =
-                participants[currentParticipantIndex];
             currentParticipant.sharedSecret = (
-                currentParticipant.getKeyPair().getPrivateKey()
-                *
-                expressions[0].result
+                currentParticipant.keyPair.getPrivateKey() * expressions[0].result
             ).getCoordinates().x;
-            expressions.erase(
-                expressions.begin(), expressions.begin() + 1
-            );
-            cout << currentParticipant.getName()
+            expressions.erase(expressions.begin(), expressions.begin() + 1);
+            cout << currentParticipant.name
                 << " generated a shared secret: "
-                << currentParticipant.getSharedSecret() << endl << endl;
+                <<  currentParticipant.sharedSecret << endl << endl;
         }
 
-        static vector<Expression> calculateDataForNextParticipant(
+        static void convertExpressionsForNextParticipant(
             vector<Expression>& expressions,
-            vector<Participant>& participants,
-            const int currentParticipantIndex,
-            const int nextParticipantIndex,
+            const Participant& currentParticipant,
+            const Participant& nextParticipant,
+            const int numberOfParticipants,
             const int step
         ) {
-            for (auto& calculation: expressions) {
-                calculation.variables.push_back(
-                    participants[currentParticipantIndex].getName()
-                );
-                calculation.result = participants[currentParticipantIndex]
-                    .getKeyPair().getPrivateKey() * calculation.result;
+            for (auto& expression : expressions) {
+                expression.variables.push_back(currentParticipant.name);
+                expression.result *= currentParticipant.keyPair.getPrivateKey();
             }
-            if (step < participants.size()) {
-                expressions.push_back(Expression(vector<string>(
-                    {{participants[currentParticipantIndex].getName()}}
-                ),
-                participants[currentParticipantIndex]
-                    .getKeyPair().getPublicKey()));
+
+            if (step <= numberOfParticipants) {
+                expressions.push_back(Expression(
+                    vector<string>({{currentParticipant.name}}),
+                    currentParticipant.keyPair.getPublicKey()
+                ));
             }
-            cout << step + 1 << ") "
-                << participants[currentParticipantIndex].getName()
-                << " sends " << participants[nextParticipantIndex].getName()
-                << " the following intermediate calculations:" << endl;
-            for (const auto& calculation: expressions) {
-                cout << calculation << endl;
+
+            cout
+                << currentParticipant.name
+                << " sends " << nextParticipant.name
+                << " the following expressions:" << endl;
+            for (auto& expression : expressions) {
+                cout << expression << endl;
             }
             cout << endl;
-
-            return expressions;
         }
 
     public:
         static void generateSharedSecretFor(vector<Participant>& participants) {
-            vector<vector<Expression>> expressionsOfParticipants(
-                participants.size()
-            );
+            vector<Expression> expressions;
+            int cur = 0;
+            int next = cur + 1;
             int numberOfGeneratedSharedSecrets = 0;
-            int step = 0;
-            int currentParticipantIndex = 0;
-            int nextParticipantIndex = 1;
+            int step = 1;
 
             while (true) {
-                if (nextParticipantIndex >= participants.size()) {
-                    nextParticipantIndex = 0;
+                cout << step << ") " << endl;
+                if (next >= participants.size()) {
+                    next = 0;
                 }
-                vector<Expression> expressions =
-                    expressionsOfParticipants[currentParticipantIndex];
 
-                if (isThereEnoughDataToGenerateSharedSecretForCurrentParticipant(
-                    participants.size(), expressions
-                )) {
-                    generateSharedSecretForCurrentParticipant(
-                        expressions, participants, currentParticipantIndex
-                    );
-                    ++numberOfGeneratedSharedSecrets;
-                    if (numberOfGeneratedSharedSecrets == participants.size()) {
-                        break;
+                if (expressions.size() > 0) {
+                    if (enoughVariablesToGenerateSharedSecret(
+                        expressions[0].variables.size(), participants.size())
+                    ) {
+                        computeSharedSecretForCurrentParticipant(
+                            expressions, participants[cur]
+                        );
+                        ++numberOfGeneratedSharedSecrets;
+                        if (numberOfGeneratedSharedSecrets >= participants.size()) {
+                            break;
+                        }
                     }
                 }
 
-                expressionsOfParticipants[nextParticipantIndex] =
-                    calculateDataForNextParticipant(
-                        expressions,
-                        participants,
-                        currentParticipantIndex,
-                        nextParticipantIndex,
-                        step
-                    );
+                convertExpressionsForNextParticipant(
+                    expressions,
+                    participants[cur],
+                    participants[next],
+                    participants.size(),
+                    step
+                );
 
+                ++cur;
+                ++next;
                 ++step;
-                ++currentParticipantIndex;
-                ++nextParticipantIndex;
-                if (currentParticipantIndex >= participants.size()) {
-                    currentParticipantIndex = 0;
+                if (cur >= participants.size()) {
+                    cur = 0;
                 }
             }
         }

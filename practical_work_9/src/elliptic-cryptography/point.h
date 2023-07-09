@@ -132,6 +132,11 @@ namespace EllipticCryptography {
             return result;
         }
 
+        Point& operator*=(const BigInt& n) {
+            *this = *this * n;
+            return *this;
+        }
+
         bool operator==(const Point& other) const {
             if (!areEqual(this->group, other.group)) {
                 throw runtime_error(OPERATION_FAILED);

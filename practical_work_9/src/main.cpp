@@ -17,6 +17,8 @@ int main() {
     Participant Carol = Participant("Carol", generateKeyPair());
     Participant Dan = Participant("Dan", generateKeyPair());
     Participant Evans = Participant("Evans", generateKeyPair());
+    Participant Florence = Participant("Florence", generateKeyPair());
+    Participant Gabriella = Participant("Gabriella", generateKeyPair());
 
     vector<Participant> participants {{
         Alice,
@@ -34,6 +36,8 @@ int main() {
     participants.push_back(Carol);
     participants.push_back(Dan);
     participants.push_back(Evans);
+    participants.push_back(Florence);
+    participants.push_back(Gabriella);
 
     test(participants);
 
@@ -41,14 +45,13 @@ int main() {
 }
 
 bool areSharedSecretsEqual(const vector<Participant>& participants) {
-    bool result = true;
-    for (int i = 0; i < participants.size() - 1; ++i) {
-        result &=
-            participants[i].getSharedSecret()
-            ==
-            participants[i + 1].getSharedSecret();
-    }
-    return result;
+    return all_of(
+        participants.begin(),
+        participants.end(),
+        [&](const Participant& participant) {
+            return participant.getSharedSecret() == participants.front().getSharedSecret();
+        }
+    );
 }
 
 void test(vector<Participant>& participants) {
