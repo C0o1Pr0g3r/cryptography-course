@@ -53,6 +53,8 @@ namespace EllipticCryptography {
         }
 
     public:
+        Point(const Point& other) : Point(other.data, other.group) {}
+
         ~Point() {
             EC_POINT_clear_free(this->data);
             EC_GROUP_clear_free(this->group);
@@ -81,6 +83,19 @@ namespace EllipticCryptography {
                 throw runtime_error(OPERATION_FAILED);
             }
             return result;
+        }
+
+        Point& operator=(const Point& other) {
+            if (this != &other) {
+                if (
+                    !EC_POINT_copy(this->data, other.data)
+                    ||
+                    !EC_GROUP_copy(this->group, other.group)
+                ) {
+                    throw runtime_error(OPERATION_FAILED);
+                }
+            }
+            return *this;
         }
 
         Point operator+(const Point& other) const {

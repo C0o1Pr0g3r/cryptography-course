@@ -97,6 +97,15 @@ namespace EllipticCryptography {
             return result;
         }
 
+        Curve& operator=(const Curve& other) {
+            if (this != &other) {
+                if (!EC_GROUP_copy(this->group, other.group)) {
+                    throw runtime_error(OPERATION_FAILED);
+                }
+            }
+            return *this;
+        }
+
         bool operator==(const Curve& other) const {
             return areEqual(this->group, other.group);
         }
