@@ -60,7 +60,7 @@ namespace EllipticCryptography {
 
         ~Point() {
             EC_POINT_clear_free(this->data);
-            EC_GROUP_clear_free(this->group);
+            EC_GROUP_free(this->group);
         }
 
         Vector2 getCoordinates() const {
