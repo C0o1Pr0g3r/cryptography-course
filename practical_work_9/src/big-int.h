@@ -199,7 +199,7 @@ public:
                 result += bitset<BITS_PER_BYTE>(str[i]).to_string();
             }
             result = result.substr(result.find('1'));
-            delete str;
+            delete[] str;
         } else if (radix == Radix::DEC) {
             char* str = BN_bn2dec(this->data);
             if (str) {

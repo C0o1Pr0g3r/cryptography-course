@@ -196,7 +196,6 @@ public:
     ) {
         const BigInt p = keyPair.getPublicKey().getP();
         const BigInt g = keyPair.getPublicKey().getG();
-        const BigInt t = keyPair.getPublicKey().getY();
         const BigInt x = keyPair.getPrivateKey();
 
         const BigInt m = getHashAsBigInt(message);
@@ -305,7 +304,7 @@ public:
             const BigInt m = BigInt::mulMod(
                 b, BigInt::powMod(a, p - 1 - x, p), p
             );
-            decryptedMessage[i] = BigInt::mask(m, BITS_PER_BYTE);
+            decryptedMessage[i] = static_cast<Word>(BigInt::mask(m, BITS_PER_BYTE));
         }
 
         return decryptedMessage;

@@ -199,7 +199,7 @@ public:
                 result += bitset<BITS_PER_BYTE>(str[i]).to_string();
             }
             result = result.substr(result.find('1'));
-            delete str;
+            delete[] str;
         } else if (radix == Radix::DEC) {
             char* str = BN_bn2dec(this->data);
             if (str) {
@@ -320,7 +320,7 @@ public:
         return !(*this == word);
     }
 
-    operator Word() const {
+    explicit operator Word() const {
         return BN_get_word(this->data);
     }
 
@@ -370,7 +370,7 @@ public:
     ) {
         const BigInt range = max - min + 1;
         BigInt result;
-        if (!BN_pseudo_rand_range(result.data, range.data)) {
+        if (!BN_rand_range(result.data, range.data)) {
             throw runtime_error(OPERATION_FAILED);
         }
         return result + min;

@@ -152,7 +152,7 @@ void testHashingOfFilesOfDifferentSizes() {
         ) << endl;
         cout << endl;
 
-        delete data;
+        delete[] data;
         file.close();
     }
     cout << endl;

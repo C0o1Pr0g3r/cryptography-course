@@ -62,7 +62,7 @@ namespace EllipticCryptography {
         }
 
         virtual ~Curve() {
-            EC_GROUP_clear_free(this->group);
+            EC_GROUP_free(this->group);
         }
 
         BigInt getBasePointOrder() const {
